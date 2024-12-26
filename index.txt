@@ -1,0 +1,18 @@
+1:"$Sreact.fragment"
+2:I[5244,[],""]
+3:I[6310,["39","static/chunks/app/error-e7fa7550833cb77c.js"],"default"]
+4:I[3866,[],""]
+5:I[7033,[],"ClientPageRoot"]
+6:I[9809,["286","static/chunks/286-f3b59e30ead81056.js","974","static/chunks/app/page-5a86ea1301cd89e5.js"],"default"]
+9:I[6213,[],"OutletBoundary"]
+b:I[6213,[],"MetadataBoundary"]
+d:I[6213,[],"ViewportBoundary"]
+f:I[4788,["219","static/chunks/app/global-error-c8956159ffd4e524.js"],"default"]
+:HL["/crypto-ai/_next/static/media/a34f9d1faa5f3315-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/crypto-ai/_next/static/css/d91af71970b38087.css","style"]
+0:{"P":null,"b":"woAkzmdvxlK6C46ZV4zxD","p":"/crypto-ai","c":["",""],"i":false,"f":[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],["",["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/crypto-ai/_next/static/css/d91af71970b38087.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"className":"__className_e70ef3","children":["$","$L2",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$3","errorStyles":[],"errorScripts":[],"template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[],null],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]]}],{"children":["__PAGE__",["$","$1","c",{"children":[["$","$L5",null,{"Component":"$6","searchParams":{},"params":{},"promises":["$@7","$@8"]}],null,["$","$L9",null,{"children":"$La"}]]}],{},null,false]},[["$","div","l",{"className":"fixed inset-0 bg-[#0C0C0C] flex flex-col items-center justify-center","children":["$","div",null,{"className":"text-center space-y-4","children":[["$","div",null,{"className":"text-[#F6465D] text-4xl font-bold mb-2 animate-pulse","children":"1 error"}],["$","div",null,{"className":"text-white text-2xl font-bold bg-gradient-to-r from-[#02C076] via-[#FCD535] to-[#F6465D] text-transparent bg-clip-text animate-pulse","children":"NOThing"}]]}]}],[],[]],false],["$","$1","h",{"children":[null,["$","$1","iCvEUIeTpZetkwDwXD__C",{"children":[["$","$Lb",null,{"children":"$Lc"}],["$","$Ld",null,{"children":"$Le"}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]]}],false]],"m":"$undefined","G":["$f",[]],"s":false,"S":true}
+7:{}
+8:{}
+e:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+c:[["$","meta","0",{"charSet":"utf-8"}],["$","title","1",{"children":"AI CRYPTO FUN TOOL"}],["$","meta","2",{"name":"description","content":"AI CRYPTO FUN TOOL - When 100x Wen Lambo"}],["$","link","3",{"rel":"icon","href":"/crypto-ai/favicon.ico","type":"image/x-icon","sizes":"16x16"}]]
+a:null
