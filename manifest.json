@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AI Crypto Fun Tool",
+  "version": "1.0",
+  "description": "AI Crypto Fun Tool - When 100x Wen Lambo",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+} 
