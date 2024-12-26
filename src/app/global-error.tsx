@@ -1,17 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-
 export default function GlobalError({
   error,
-  reset,
+  reset
 }: {
-  error: Error & { digest?: string };
+  error: Error;
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
+  console.error(error);
   return null;
 } 

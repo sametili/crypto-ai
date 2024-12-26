@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import React, { ReactNode } from 'react';
-import axios from 'axios';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowTrendingUpIcon, CurrencyDollarIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface CoinData {
@@ -13,9 +11,9 @@ interface CoinData {
 }
 
 interface HighScore {
+  playerName: string;
   multiplier: number;
   date: string;
-  playerName: string;
 }
 
 const CoinList = ({ 
@@ -585,232 +583,135 @@ const ChartModal = ({ symbol, isOpen, onClose }: ChartModalProps) => {
   );
 };
 
+const HighScoreTable = ({ scores }: { scores: HighScore[] }) => (
+  <div className="bg-[#181818] rounded-xl p-6 mb-8 transform hover:scale-[1.02] transition-all duration-300 group relative overflow-hidden">
+    {/* Animated border gradient */}
+    <div className="absolute -inset-[1px] bg-gradient-to-r from-[#02C076] via-[#FCD535] to-[#F6465D] opacity-0 group-hover:opacity-100 transition-all duration-300"
+         style={{ animation: 'borderGlow 2s linear infinite' }}></div>
+    
+    {/* Content container */}
+    <div className="relative bg-[#181818] rounded-xl p-6 z-10">
+      {/* Glowing corners */}
+      <div className="absolute top-0 left-0 w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#FCD535] to-transparent opacity-20"></div>
+      </div>
+      <div className="absolute top-0 right-0 w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-[#02C076] to-transparent opacity-20"></div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-tr from-[#F6465D] to-transparent opacity-20"></div>
+      </div>
+      <div className="absolute bottom-0 right-0 w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tl from-[#FCD535] to-transparent opacity-20"></div>
+      </div>
+
+      <h2 className="text-2xl font-bold mb-4 text-[#FCD535] text-center">High Scores</h2>
+      <div className="overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="text-gray-400">
+              <th className="pb-2 text-left">Player</th>
+              <th className="pb-2 text-right">Multiplier</th>
+              <th className="pb-2 text-right">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scores.map((score, index) => (
+              <tr 
+                key={index}
+                className="group/row hover:bg-white/5 transition-colors"
+              >
+                <td className="py-2 text-left font-medium group-hover/row:text-[#FCD535] transition-colors">
+                  {score.playerName}
+                </td>
+                <td className="py-2 text-right font-mono group-hover/row:text-[#FCD535] transition-colors">
+                  {score.multiplier.toFixed(1)}x
+                </td>
+                <td className="py-2 text-right text-sm text-gray-400 group-hover/row:text-white transition-colors">
+                  {score.date}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+);
+
 export default function Home() {
-  const [spotGainers, setSpotGainers] = useState<CoinData[]>([]);
-  const [futuresGainers, setFuturesGainers] = useState<CoinData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [spotPrices, setSpotPrices] = useState<CoinData[]>([]);
+  const [futuresPrices, setFuturesPrices] = useState<CoinData[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<string | null>(null);
   const [flashingCoins, setFlashingCoins] = useState<{[key: string]: string}>({});
-  const [prevSpotData, setPrevSpotData] = useState<{[key: string]: string}>({});
-  const [prevFuturesData, setPrevFuturesData] = useState<{[key: string]: string}>({});
   const [highScores, setHighScores] = useState<HighScore[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
 
-  // Initial loading effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 4000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Load high scores from localStorage
-  useEffect(() => {
-    const savedScores = localStorage.getItem('highScores');
-    if (savedScores) {
-      setHighScores(JSON.parse(savedScores));
+  const fetchPrices = async () => {
+    try {
+      const [spotResponse, futuresResponse] = await Promise.all([
+        fetch('https://api.binance.com/api/v3/ticker/24hr'),
+        fetch('https://fapi.binance.com/fapi/v1/ticker/24hr')
+      ]);
+
+      const spotData = await spotResponse.json();
+      const futuresData = await futuresResponse.json();
+
+      const sortedSpotPrices = spotData
+        .filter((coin: CoinData) => coin.symbol.endsWith('USDT'))
+        .sort((a: CoinData, b: CoinData) => parseFloat(b.priceChangePercent) - parseFloat(a.priceChangePercent))
+        .slice(0, 30);
+
+      const sortedFuturesPrices = futuresData
+        .sort((a: CoinData, b: CoinData) => parseFloat(b.priceChangePercent) - parseFloat(a.priceChangePercent))
+        .slice(0, 30);
+
+      setSpotPrices(sortedSpotPrices);
+      setFuturesPrices(sortedFuturesPrices);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      setIsLoading(false);
     }
-  }, []);
-
-  // Veri çekme için useEffect
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    const fetchData = async () => {
-      try {
-        // Fetch spot data
-        const spotResponse = await axios.get('https://api.binance.com/api/v3/ticker/24hr');
-        const spotData = spotResponse.data
-          .filter((coin: CoinData) => coin.symbol.endsWith('USDT'))
-          .sort((a: CoinData, b: CoinData) => 
-            parseFloat(b.priceChangePercent) - parseFloat(a.priceChangePercent)
-          )
-          .slice(0, 30);
-        
-        // Fetch futures data
-        const futuresResponse = await axios.get('https://fapi.binance.com/fapi/v1/ticker/24hr');
-        const futuresData = futuresResponse.data
-          .sort((a: CoinData, b: CoinData) => 
-            parseFloat(b.priceChangePercent) - parseFloat(a.priceChangePercent)
-          )
-          .slice(0, 30);
-
-        // Check for price changes in each coin
-        const newFlashingCoins: {[key: string]: string} = {};
-
-        [...spotData, ...futuresData].forEach((coin: CoinData) => {
-          const prevPrice = prevSpotData[coin.symbol] || prevFuturesData[coin.symbol];
-          if (prevPrice && coin.lastPrice) {
-            const change = (parseFloat(coin.lastPrice) - parseFloat(prevPrice)) / parseFloat(prevPrice) * 100;
-            if (Math.abs(change) > 0.1) {
-              newFlashingCoins[coin.symbol] = change > 0 ? '#02C07630' : '#F6465D30';
-            }
-          }
-        });
-
-        setFlashingCoins(newFlashingCoins);
-        setTimeout(() => setFlashingCoins({}), 1000);
-
-        // Update previous data
-        const newSpotData: {[key: string]: string} = {};
-        const newFuturesData: {[key: string]: string} = {};
-        spotData.forEach((coin: CoinData) => {
-          newSpotData[coin.symbol] = coin.lastPrice;
-        });
-        futuresData.forEach((coin: CoinData) => {
-          newFuturesData[coin.symbol] = coin.lastPrice;
-        });
-        setPrevSpotData(newSpotData);
-        setPrevFuturesData(newFuturesData);
-
-        setSpotGainers(spotData);
-        setFuturesGainers(futuresData);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-
-    if (!initialLoading) {
-      fetchData();
-      const interval = setInterval(fetchData, 4000);
-
-      return () => {
-        clearInterval(interval);
-        abortController.abort();
-      };
-    }
-  }, [initialLoading, prevSpotData, prevFuturesData]);
-
-  if (initialLoading) {
-    return (
-      <div className="fixed inset-0 bg-[#0C0C0C] flex flex-col items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-[#F6465D] text-4xl font-bold mb-2 animate-pulse">
-            1 error
-          </div>
-          <div className="text-white text-2xl font-bold bg-gradient-to-r from-[#02C076] via-[#FCD535] to-[#F6465D] text-transparent bg-clip-text animate-pulse">
-            NOThing
-          </div>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-[#0C0C0C] text-white relative">
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        <div className="flex flex-col items-center mb-12">
-          <span className="text-6xl font-bold bg-gradient-to-r from-[#02C076] via-[#FCD535] to-[#F6465D] text-transparent bg-clip-text mb-8 cursor-pointer">
-            AI CRYPTO FUN TOOL
-          </span>
-          <div className="relative flex flex-col items-center w-full gap-8">
-            <div className="flex justify-between items-center w-full">
-              <span className="text-5xl font-bold text-[#02C076] transition-all duration-300 hover:text-[#02C076] hover:drop-shadow-[0_0_30px_rgba(2,192,118,0.7)] cursor-pointer">
-                When 100x
-              </span>
-              <span className="text-5xl font-bold text-[#F6465D] transition-all duration-300 hover:text-[#F6465D] hover:drop-shadow-[0_0_30px_rgba(246,70,93,0.7)] cursor-pointer">
-                Wen Lambo
-              </span>
-            </div>
-            
-            {/* High Scores Table */}
-            <div className="relative bg-[#181818] rounded-lg p-3 w-96 group hover:transform hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden">
-              {/* Animated gradient border */}
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-[#02C076] via-[#FCD535] to-[#F6465D] rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
-                   style={{ animation: 'borderGlow 2s linear infinite' }}></div>
-              
-              {/* Content container with glass effect */}
-              <div className="relative bg-[#181818] rounded-lg p-3 z-10 group-hover:bg-[#181818]/90 transition-all duration-300 backdrop-blur-sm">
-                {/* Glowing corners */}
-                <div className="absolute top-0 left-0 w-6 h-6 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#FCD535] to-transparent opacity-20"></div>
-                </div>
-                <div className="absolute top-0 right-0 w-6 h-6 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-[#02C076] to-transparent opacity-20"></div>
-                </div>
-                <div className="absolute bottom-0 left-0 w-6 h-6 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-tr from-[#F6465D] to-transparent opacity-20"></div>
-                </div>
-                <div className="absolute bottom-0 right-0 w-6 h-6 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tl from-[#FCD535] to-transparent opacity-20"></div>
-                </div>
+    <main className="min-h-screen bg-[#0C0C0C] text-white p-8">
+      <div className="container mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8 text-[#FCD535] cursor-pointer hover:text-[#FCD535]/80 transition-colors">
+          AI CRYPTO FUN TOOL
+        </h1>
 
-                <h3 className="text-sm font-bold text-[#FCD535] mb-2 flex items-center gap-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#02C076] group-hover:via-[#FCD535] group-hover:to-[#F6465D] transition-all duration-300">
-                  <span className="group-hover:animate-bounce">🏆</span> High Scores
-                </h3>
-                <div className="overflow-auto max-h-60">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 bg-[#181818] group-hover:bg-[#181818]/90">
-                      <tr className="text-gray-400 border-b border-[#2B2B2B] group-hover:border-[#FCD535]/20">
-                        <th className="pb-1 text-left group-hover:text-[#FCD535] transition-colors">#</th>
-                        <th className="pb-1 text-left group-hover:text-[#FCD535] transition-colors">Player</th>
-                        <th className="pb-1 text-right group-hover:text-[#FCD535] transition-colors">Score</th>
-                        <th className="pb-1 text-right group-hover:text-[#FCD535] transition-colors">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {highScores.map((score, index) => (
-                        <tr key={index} className="border-b border-[#2B2B2B] last:border-0 group-hover:border-[#FCD535]/10">
-                          <td className="py-1 text-[#FCD535]">{index + 1}</td>
-                          <td className="py-1 text-white group-hover:text-[#FCD535] transition-colors">{score.playerName}</td>
-                          <td className="py-1 text-[#02C076] text-right group-hover:text-[#02C076] transition-colors">{score.multiplier}x</td>
-                          <td className="py-1 text-gray-400 text-right text-xs group-hover:text-gray-300 transition-colors">{score.date}</td>
-                        </tr>
-                      ))}
-                      {highScores.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="py-2 text-center text-gray-400 group-hover:text-[#FCD535] transition-colors">
-                            No scores yet 🚀
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PlaneGame highScores={highScores} setHighScores={setHighScores} />
+        
+        <HighScoreTable scores={highScores} />
 
-        <PlaneGame 
-          highScores={highScores} 
-          setHighScores={setHighScores}
-        />
-
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-6 text-[#FCD535]">
-            Top 30 Gainers on Binance
-          </h1>
-          <p className="text-lg text-gray-300">
-            24-hour price changes for top performing cryptocurrencies
-          </p>
-        </div>
-
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FCD535] border-t-transparent"></div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <CoinList
-              coins={spotGainers}
+              coins={spotPrices}
               title="Spot Market"
               flashingCoins={flashingCoins}
-              onCoinSelect={(symbol) => setSelectedCoin(symbol)}
+              onCoinSelect={setSelectedCoin}
             />
-            
             <CoinList
-              coins={futuresGainers}
+              coins={futuresPrices}
               title="Futures Market"
               flashingCoins={flashingCoins}
-              onCoinSelect={(symbol) => setSelectedCoin(symbol)}
-              isFutures={true}
+              onCoinSelect={setSelectedCoin}
             />
           </div>
         )}
-
         <ChartModal
           symbol={selectedCoin || ''}
           isOpen={!!selectedCoin}
