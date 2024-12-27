@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: 'standalone',
   images: {
     unoptimized: true,
   },
@@ -9,8 +9,7 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true
-  },
-  basePath: '/crypto-ai'
+  }
 }
 
 module.exports = nextConfig 
